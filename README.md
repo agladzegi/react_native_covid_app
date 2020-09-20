@@ -3,7 +3,8 @@
 ### TODOS:
 
 - [x] Convert UI design of home page to actual UI
-- [ ] Get data with axios and display it
+- [x] Get data with axios and display it
+- [x] Setup loader when data is loading to show it
 - [ ] Add button or something to go to prevent screen
 - [ ] Start working on prevent page
   - [ ] Make UI from design

@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -8,6 +8,7 @@ import {
   StatusBar,
   Image,
   Linking,
+  ActivityIndicator,
 } from 'react-native';
 import PropTypes from 'prop-types';
 import {TouchableWithoutFeedback} from 'react-native-gesture-handler';
@@ -19,12 +20,57 @@ import LinearGradient from 'react-native-linear-gradient';
 import {Picker} from '@react-native-community/picker';
 import {countryArray} from '../countryArray';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import axios from 'axios';
+import {set} from 'react-native-reanimated';
 
 const Home = ({navigation}) => {
   const [selected, setSelected] = useState('Georgia');
+  const [byCountry, setByCountry] = useState(null);
+  const [wholePlanet, setWholePlanet] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    getWholePlanet();
+  }, []);
+
+  useEffect(() => {
+    getByCountry();
+  }, [selected]);
 
   const inputValueChange = (inputValue) => {
     setSelected(inputValue);
+  };
+
+  const getWholePlanet = async () => {
+    setLoading(true);
+
+    try {
+      const res = await axios.get(
+        'https://coronavirus-19-api.herokuapp.com/all',
+      );
+
+      setWholePlanet(res.data);
+      setLoading(false);
+    } catch (error) {
+      console.log('Ops, something went wrong');
+      setLoading(false);
+    }
+  };
+
+  const getByCountry = async () => {
+    setLoading(true);
+
+    try {
+      const res = await axios.get(
+        `https://coronavirus-19-api.herokuapp.com/countries/${selected}`,
+      );
+
+      setByCountry(res.data);
+      setLoading(false);
+    } catch (error) {
+      console.log('Ops, something went wrong');
+      setLoading(false);
+    }
   };
 
   const handleClick = async () => {
@@ -97,53 +143,124 @@ const Home = ({navigation}) => {
             </Picker>
           </View>
         </View>
-        <View style={styles.textContainer}>
-          <Text style={styles.textTitle}>საბოლოო ინფორმაცია</Text>
-        </View>
-        <View style={styles.casesContainer}>
-          <Text>Container</Text>
-        </View>
-        <View style={styles.textContainer}>
-          <Text style={styles.textTitle}>სულ შემთხვევები</Text>
-          <TouchableWithoutFeedback onPress={handleClick}>
-            <Text style={styles.textDetails}>
-              დეტალების ნახვა{' '}
-              <Icon name="near-me" size={15} style={{alignSelf: 'center'}} />
-            </Text>
-          </TouchableWithoutFeedback>
-        </View>
-        <View style={styles.casesContainer}>
-          <View style={styles.caseInnerContainer}>
-            <View style={[styles.circle, {backgroundColor: '#FCD4C5'}]}>
-              <View
-                style={[styles.circleInner, {borderColor: '#FF884A'}]}></View>
-            </View>
-            <Text style={[styles.caseInnerNumber, {color: '#FF884A'}]}>
-              100000000
-            </Text>
-            <Text style={styles.caseInnerText}>დაინფიცირებული</Text>
+        {loading ? (
+          <View style={styles.loaderContainer}>
+            <ActivityIndicator size="large" color="#2768BE" />
           </View>
-          <View style={styles.caseInnerContainer}>
-            <View style={[styles.circle, {backgroundColor: '#D5F9D2'}]}>
-              <View
-                style={[styles.circleInner, {borderColor: '#38C22E'}]}></View>
+        ) : (
+          <>
+            <View style={styles.textContainer}>
+              <Text style={styles.textTitle}>ბოლო ინფორმაცია</Text>
             </View>
-            <Text style={[styles.caseInnerNumber, {color: '#38C22E'}]}>
-              100000000
-            </Text>
-            <Text style={styles.caseInnerText}>გამოჯამრთელებული</Text>
-          </View>
-          <View style={styles.caseInnerContainer}>
-            <View style={[styles.circle, {backgroundColor: '#FFBFBF'}]}>
-              <View
-                style={[styles.circleInner, {borderColor: '#FF5757'}]}></View>
+            {byCountry ? (
+              <View style={styles.casesContainer}>
+                <View style={styles.caseInnerContainer}>
+                  <View style={[styles.circle, {backgroundColor: '#FCD4C5'}]}>
+                    <View
+                      style={[
+                        styles.circleInner,
+                        {borderColor: '#FF884A'},
+                      ]}></View>
+                  </View>
+                  <Text style={[styles.caseInnerNumber, {color: '#FF884A'}]}>
+                    {byCountry.cases}
+                  </Text>
+                  <Text style={styles.caseInnerText}>დაინფიცირებული</Text>
+                </View>
+                <View style={styles.caseInnerContainer}>
+                  <View style={[styles.circle, {backgroundColor: '#D5F9D2'}]}>
+                    <View
+                      style={[
+                        styles.circleInner,
+                        {borderColor: '#38C22E'},
+                      ]}></View>
+                  </View>
+                  <Text style={[styles.caseInnerNumber, {color: '#38C22E'}]}>
+                    {byCountry.recovered}
+                  </Text>
+                  <Text style={styles.caseInnerText}>გამოჯამრთელებული</Text>
+                </View>
+                <View style={styles.caseInnerContainer}>
+                  <View style={[styles.circle, {backgroundColor: '#FFBFBF'}]}>
+                    <View
+                      style={[
+                        styles.circleInner,
+                        {borderColor: '#FF5757'},
+                      ]}></View>
+                  </View>
+                  <Text style={[styles.caseInnerNumber, {color: '#FF5757'}]}>
+                    {byCountry.deaths}
+                  </Text>
+                  <Text style={styles.caseInnerText}>გარდაცვლილი</Text>
+                </View>
+              </View>
+            ) : (
+              <View style={styles.casesContainer}>
+                <Text>უპს, დაფიქსირდა შეცდომა...</Text>
+              </View>
+            )}
+            <View style={styles.textContainer}>
+              <Text style={styles.textTitle}>მსოფლიოს მაშტაბით</Text>
+              <TouchableWithoutFeedback onPress={handleClick}>
+                <Text style={styles.textDetails}>
+                  დეტალების ნახვა{' '}
+                  <Icon
+                    name="near-me"
+                    size={15}
+                    style={{alignSelf: 'center'}}
+                  />
+                </Text>
+              </TouchableWithoutFeedback>
             </View>
-            <Text style={[styles.caseInnerNumber, {color: '#FF5757'}]}>
-              100000000
-            </Text>
-            <Text style={styles.caseInnerText}>გარდაცვლილი</Text>
-          </View>
-        </View>
+            {wholePlanet ? (
+              <View style={styles.casesContainer}>
+                <View style={styles.caseInnerContainer}>
+                  <View style={[styles.circle, {backgroundColor: '#FCD4C5'}]}>
+                    <View
+                      style={[
+                        styles.circleInner,
+                        {borderColor: '#FF884A'},
+                      ]}></View>
+                  </View>
+                  <Text style={[styles.caseInnerNumber, {color: '#FF884A'}]}>
+                    {wholePlanet.cases}
+                  </Text>
+                  <Text style={styles.caseInnerText}>დაინფიცირებული</Text>
+                </View>
+                <View style={styles.caseInnerContainer}>
+                  <View style={[styles.circle, {backgroundColor: '#D5F9D2'}]}>
+                    <View
+                      style={[
+                        styles.circleInner,
+                        {borderColor: '#38C22E'},
+                      ]}></View>
+                  </View>
+                  <Text style={[styles.caseInnerNumber, {color: '#38C22E'}]}>
+                    {wholePlanet.recovered}
+                  </Text>
+                  <Text style={styles.caseInnerText}>გამოჯამრთელებული</Text>
+                </View>
+                <View style={styles.caseInnerContainer}>
+                  <View style={[styles.circle, {backgroundColor: '#FFBFBF'}]}>
+                    <View
+                      style={[
+                        styles.circleInner,
+                        {borderColor: '#FF5757'},
+                      ]}></View>
+                  </View>
+                  <Text style={[styles.caseInnerNumber, {color: '#FF5757'}]}>
+                    {wholePlanet.deaths}
+                  </Text>
+                  <Text style={styles.caseInnerText}>გარდაცვლილი</Text>
+                </View>
+              </View>
+            ) : (
+              <View style={styles.casesContainer}>
+                <Text>უპს, დაფიქსირდა შეცდომა...</Text>
+              </View>
+            )}
+          </>
+        )}
       </View>
     </View>
   );
@@ -176,7 +293,6 @@ const styles = StyleSheet.create({
     borderRadius: wp('5%'),
     borderWidth: 1,
     borderColor: '#dedede',
-    // backgroundColor: 'red',
     marginTop: wp('6%'),
     justifyContent: 'center',
     alignSelf: 'center',
@@ -250,6 +366,11 @@ const styles = StyleSheet.create({
     color: '#a8a8a8',
     fontSize: wp('2.5%'),
     marginTop: wp('1%'),
+  },
+  loaderContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    flex: 1,
   },
 });
 
