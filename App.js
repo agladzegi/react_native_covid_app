@@ -1,18 +1,22 @@
 import 'react-native-gesture-handler';
-import React from 'react';
+import React, {useEffect} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {StatusBar} from 'react-native';
 import {
   CardStyleInterpolators,
   createStackNavigator,
 } from '@react-navigation/stack';
+import SplashScreen from 'react-native-splash-screen';
 
 import Home from './screens/Home';
-import Symptom from './screens/Symptom';
 
 const Stack = createStackNavigator();
 
 const App = () => {
+  useEffect(() => {
+    return SplashScreen.hide();
+  }, []);
+
   return (
     <NavigationContainer>
       <StatusBar backgroundColor="#14277A" barStyle="light-content" />
@@ -29,7 +33,6 @@ const App = () => {
             headerShown: false,
           }}
         />
-        <Stack.Screen name="Symptom" component={Symptom} />
       </Stack.Navigator>
     </NavigationContainer>
   );
