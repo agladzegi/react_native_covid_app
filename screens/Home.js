@@ -208,7 +208,7 @@ const Home = ({navigation}) => {
                     ? `N/A`
                     : `${byCountry.recovered}`}
                 </Text>
-                <Text style={styles.caseInnerText}>გამოჯამრთელებული</Text>
+                <Text style={styles.caseInnerText}>გამოჯანმრთელებული</Text>
               </View>
               <View style={styles.caseInnerContainer}>
                 <View style={[styles.circle, {backgroundColor: '#FFBFBF'}]}>
